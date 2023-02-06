@@ -1,0 +1,21 @@
+{
+  "name": "unbug",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-db": "psql postgres://postgres@localhost -f ./data/ddl/create-database.sql",
+    "create-tables": "psql postgres://postgres@localhost/bugs -f ./data/ddl/create-tables.sql",
+    "start-dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/cors": "^8.2.0",
+    "@fastify/postgres": "^5.2.0",
+    "fastify": "^4.12.0",
+    "nodemon": "^2.0.20"
+  }
+}

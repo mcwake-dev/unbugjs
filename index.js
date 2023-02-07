@@ -105,7 +105,7 @@ fastify.delete('/api/apps/:app_id', {
         const { app_id } = request.params;
 
         try {
-            const { rows } = await client.query("DELETE FROM app WHERE app_id=$1 RETURNING *", [app_id]);
+            const { rows } = await client.query("DELETE FROM app WHERE app_id=$1 RETURNING app_id, app_name;", [app_id]);
 
             if (rows.length === 0) {
                 reply.status(404);
@@ -148,7 +148,7 @@ fastify.post("/api/apps/:app_id/versions", {
     const { app_id } = request.params;
     const { major_version, minor_version, patch_version } = request.body;
     try {
-        const { rows } = await client.query("INSERT INTO app_version(app_id, major_version, minor_version, patch_version) VALUES ($1, $2, $3, $4) RETURNING *", [app_id, major_version, minor_version, patch_version]);
+        const { rows } = await client.query("INSERT INTO app_version(app_id, major_version, minor_version, patch_version) VALUES ($1, $2, $3, $4) RETURNING app_id, major_version, minor_version, patch_version;", [app_id, major_version, minor_version, patch_version]);
 
         reply.status(201).send(rows[0]);
     } finally {
@@ -162,7 +162,7 @@ fastify.get("/api/apps/:app_id/versions/:app_version_id", {
     }, validatorCompiler
 }, async (request, reply) => {
     const client = await fastify.pg.connect();
-    const { app_id, app_version_id } = request.params;
+    const { app_version_id } = request.params;
 
     try {
         const { rows } = await client.query("SELECT major_version, minor_version, patch_version FROM app_version WHERE app_version_id = $1", [app_version_id]);
@@ -170,6 +170,7 @@ fastify.get("/api/apps/:app_id/versions/:app_version_id", {
         if (rows.length === 0) {
             reply.status(404);
         }
+
         return rows[0];
     } finally {
         client.release();
@@ -183,19 +184,43 @@ fastify.put("/api/apps/:app_id/versions/:app_version_id", {
     }, validatorCompiler
 }, async (request, reply) => {
     const client = await fastify.pg.connect();
-    const { app_id, app_version_id } = request.params;
+    const { app_version_id } = request.params;
+    const { major_version, minor_version, patch_version } = request.body;
 
     try {
-        const { rows } = await client.query("SELECT major_version, minor_version, patch_version FROM app_version WHERE app_version_id = $1", [app_version_id]);
+        const { rows } = await client.query("UPDATE app_version SET major_version = $1, minor_version = $2, patch_version = $3 WHERE app_version_id = $4 RETURNING app_version_id, major_version, minor_version, patch_version;", [major_version, minor_version, patch_version, app_version_id]);
 
         if (rows.length === 0) {
             reply.status(404);
         }
+
         return rows[0];
     } finally {
         client.release();
     }
 });
+
+fastify.delete('/api/apps/:app_id/versions/:app_version_id', {
+    schema: {
+        params: Joi.object().keys({ ...appIdSchema, ...appVersionIdSchema }).required()
+    }, validatorCompiler
+},
+    async (request, reply) => {
+        const client = await fastify.pg.connect();
+        const { app_version_id } = request.params;
+
+        try {
+            const { rows } = await client.query("DELETE FROM app_version WHERE app_version_id=$1 RETURNING app_version_id, major_version, minor_version, patch_version;", [app_version_id]);
+
+            if (rows.length === 0) {
+                reply.status(404);
+            } else {
+                reply.status(204);
+            }
+        } finally {
+            client.release();
+        }
+    });
 
 const start = async () => {
     try {

@@ -10,7 +10,7 @@ fastify.register(require('@fastify/postgres'), {
 fastify.register(require("./routes/app.routes"));
 fastify.register(require("./routes/app_version.routes"));
 fastify.register(require("./routes/bug.routes"));
-
+fastify.register(require("./routes/bug_audit.routes"));
 const start = async () => {
     try {
         await fastify.listen({ port: 3000 });

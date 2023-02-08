@@ -13,22 +13,28 @@ const { bugIdSchema, bugSchema } = require("../schema/bug.schema");
  * @param {Object} options Plugin options
  */
 async function routes(fastify, options) {
-    fastify.get("/api/apps/:app_id/versions/:app_version_id/bugs",
-        async (request, reply) => {
-            const client = await fastify.pg.connect();
-            const { app_version_id } = request.params;
-            try {
-                const { rows } = await client.query("SELECT bug_id, attempted, expected, actual, created FROM bug WHERE app_version_id=$1 ORDER BY created ASC;", [app_version_id]);
+    fastify.get("/api/apps/:app_id/versions/:app_version_id/bugs", {
+        schema: {
+            params: Joi.object().keys({
+                ...appIdSchema,
+                ...appVersionIdSchema
+            })
+        }, validatorCompiler
+    }, async (request, reply) => {
+        const client = await fastify.pg.connect();
+        const { app_version_id } = request.params;
+        try {
+            const { rows } = await client.query("SELECT bug_id, app_version_id, attempted, expected, actual, created FROM bug WHERE app_version_id=$1 ORDER BY created ASC;", [app_version_id]);
 
-                if (rows.length === 0) {
-                    reply.status(404);
-                }
-
-                return rows;
-            } finally {
-                client.release();
+            if (rows.length === 0) {
+                reply.status(404);
             }
-        });
+
+            return rows;
+        } finally {
+            client.release();
+        }
+    });
 
     fastify.post("/api/apps/:app_id/versions/:app_version_id/bugs", {
         schema: {

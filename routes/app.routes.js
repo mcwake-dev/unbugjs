@@ -11,11 +11,15 @@ const { appIdSchema, appNameSchema } = require("../schema/app.schema");
  * @param {Object} options Plugin options 
  */
 async function routes(fastify, options) {
-    fastify.get('/api/apps', async (_request, _reply) => {
+    fastify.get('/api/apps', async (_request, reply) => {
         const client = await fastify.pg.connect();
 
         try {
             const { rows } = await client.query('SELECT app_id, app_name FROM app ORDER BY app_name');
+
+            if (rows.length === 0) {
+                reply.status(404);
+            }
 
             return rows;
         } finally {

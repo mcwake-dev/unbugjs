@@ -4,6 +4,7 @@ const Joi = require("joi");
 
 const { validatorCompiler } = require("../utils/validatorCompiler.util");
 const { appIdSchema, appNameSchema } = require("../schema/app.schema");
+
 /**
  * Encapsulates App routes
  * @param {FastifyInstance} fastify Fastify Instance
@@ -22,7 +23,11 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.post('/api/apps', { schema: { body: Joi.object().keys({ ...appNameSchema }).required() }, validatorCompiler }, async (request, reply) => {
+    fastify.post('/api/apps', {
+        schema: {
+            body: Joi.object().keys({ ...appNameSchema }).required()
+        }, validatorCompiler
+    }, async (request, reply) => {
         const client = await fastify.pg.connect();
         const { app_name } = request.body;
 
@@ -35,7 +40,11 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.get('/api/apps/:app_id', { schema: { params: Joi.object().keys({ ...appIdSchema }) }, validatorCompiler }, async (request, reply) => {
+    fastify.get('/api/apps/:app_id', {
+        schema: {
+            params: Joi.object().keys({ ...appIdSchema })
+        }, validatorCompiler
+    }, async (request, reply) => {
         const client = await fastify.pg.connect();
         const { app_id } = request.params;
 
@@ -58,46 +67,44 @@ async function routes(fastify, options) {
             body: Joi.object().keys({ ...appNameSchema }).required()
         },
         validatorCompiler
-    },
-        async (request, reply) => {
-            const client = await fastify.pg.connect();
-            const { app_id } = request.params;
-            const { app_name } = request.body;
+    }, async (request, reply) => {
+        const client = await fastify.pg.connect();
+        const { app_id } = request.params;
+        const { app_name } = request.body;
 
-            try {
-                const { rows } = await client.query("UPDATE app SET app_name=$1 WHERE app_id=$2 RETURNING app_id, app_name", [app_name, app_id]);
+        try {
+            const { rows } = await client.query("UPDATE app SET app_name=$1 WHERE app_id=$2 RETURNING app_id, app_name", [app_name, app_id]);
 
-                if (rows.length === 0) {
-                    reply.status(404);
-                }
-
-                return rows[0];
-            } finally {
-                client.release();
+            if (rows.length === 0) {
+                reply.status(404);
             }
-        });
+
+            return rows[0];
+        } finally {
+            client.release();
+        }
+    });
 
     fastify.delete('/api/apps/:app_id', {
         schema: {
             params: Joi.object().keys({ ...appIdSchema }).required()
         }, validatorCompiler
-    },
-        async (request, reply) => {
-            const client = await fastify.pg.connect();
-            const { app_id } = request.params;
+    }, async (request, reply) => {
+        const client = await fastify.pg.connect();
+        const { app_id } = request.params;
 
-            try {
-                const { rows } = await client.query("DELETE FROM app WHERE app_id=$1 RETURNING app_id, app_name;", [app_id]);
+        try {
+            const { rows } = await client.query("DELETE FROM app WHERE app_id=$1 RETURNING app_id, app_name;", [app_id]);
 
-                if (rows.length === 0) {
-                    reply.status(404);
-                } else {
-                    reply.status(204);
-                }
-            } finally {
-                client.release();
+            if (rows.length === 0) {
+                reply.status(404);
+            } else {
+                reply.status(204);
             }
-        });
+        } finally {
+            client.release();
+        }
+    });
 }
 
 module.exports = routes;

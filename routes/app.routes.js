@@ -17,10 +17,6 @@ async function routes(fastify, options) {
         try {
             const { rows } = await client.query('SELECT app_id, app_name FROM app ORDER BY app_name');
 
-            if (rows.length === 0) {
-                reply.status(404);
-            }
-
             return rows;
         } finally {
             client.release();

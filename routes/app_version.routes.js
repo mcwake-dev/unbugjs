@@ -22,10 +22,6 @@ async function routes(fastify, options) {
         try {
             const { rows } = await client.query("SELECT app_version_id, major_version, minor_version, patch_version FROM app_version WHERE app_id=$1 ORDER BY major_version DESC, minor_version DESC, patch_version DESC", [app_id]);
 
-            if (rows.length === 0) {
-                reply.status(404);
-            }
-
             return rows;
         } finally {
             client.release();

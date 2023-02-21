@@ -29,10 +29,6 @@ async function routes(fastify, options) {
         try {
             const { rows } = await client.query("SELECT bug_audit_id, bug_id, created, notes FROM bug_audit WHERE bug_id = $1 ORDER BY created;", [bug_id]);
 
-            if (rows.length === 0) {
-                reply.status(404);
-            }
-
             return rows;
         } finally {
             client.release();

@@ -4,7 +4,7 @@ const Joi = require("joi");
 
 const { validatorCompiler } = require("../utils/validatorCompiler.util");
 const { appIdSchema } = require("../schema/app.schema");
-const { appVersionIdSchema } = require("../schema/app_version.schema");
+const { appVersionIdSchema } = require("../schema/app.schema");
 const { bugIdSchema, bugSchema } = require("../schema/bug.schema");
 
 /**
@@ -13,7 +13,7 @@ const { bugIdSchema, bugSchema } = require("../schema/bug.schema");
  * @param {Object} options Plugin options
  */
 async function routes(fastify, options) {
-    fastify.get("/api/apps/:app_id/versions/:app_version_id/bugs", {
+    fastify.get("/api/apps/:app_id/versions/:app_id/bugs", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -22,9 +22,9 @@ async function routes(fastify, options) {
         }, validatorCompiler
     }, async (request, reply) => {
         const client = await fastify.pg.connect();
-        const { app_version_id } = request.params;
+        const { app_id } = request.params;
         try {
-            const { rows } = await client.query("SELECT bug_id, app_version_id, attempted, expected, actual, created FROM bug WHERE app_version_id=$1 ORDER BY created ASC;", [app_version_id]);
+            const { rows } = await client.query("SELECT bug_id, app_id, attempted, expected, actual, created FROM bug WHERE app_id=$1 ORDER BY created ASC;", [app_id]);
 
             return rows;
         } finally {
@@ -32,18 +32,18 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.post("/api/apps/:app_id/versions/:app_version_id/bugs", {
+    fastify.post("/api/apps/:app_id/versions/:app_id/bugs", {
         schema: {
             params: Joi.object().keys({ ...appIdSchema, ...appVersionIdSchema }),
             body: Joi.object().keys({ ...bugSchema })
         }, validatorCompiler
     }, async (request, reply) => {
         const client = await fastify.pg.connect();
-        const { app_version_id } = request.params;
+        const { app_id } = request.params;
         const { attempted, expected, actual } = request.body;
 
         try {
-            const { rows } = await client.query("INSERT INTO bug(app_version_id, attempted, expected, actual) VALUES ($1, $2, $3, $4) RETURNING bug_id, attempted, expected, actual, created;", [app_version_id, attempted, expected, actual]);
+            const { rows } = await client.query("INSERT INTO bug(app_id, attempted, expected, actual) VALUES ($1, $2, $3, $4) RETURNING bug_id, attempted, expected, actual, created;", [app_id, attempted, expected, actual]);
 
             if (rows.length === 0) {
                 reply.status(404);
@@ -55,7 +55,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.get("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id", {
+    fastify.get("/api/apps/:app_id/versions/:app_id/bugs/:bug_id", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -68,7 +68,7 @@ async function routes(fastify, options) {
         const { bug_id } = request.params;
 
         try {
-            const { rows } = await client.query("SELECT bug_id, app_version_id, attempted, expected, actual, created FROM bug WHERE bug_id=$1;", [bug_id]);
+            const { rows } = await client.query("SELECT bug_id, app_id, attempted, expected, actual, created FROM bug WHERE bug_id=$1;", [bug_id]);
 
             if (rows.length === 0) {
                 reply.status(404);
@@ -80,7 +80,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.put("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id", {
+    fastify.put("/api/apps/:app_id/versions/:app_id/bugs/:bug_id", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -93,10 +93,10 @@ async function routes(fastify, options) {
         }, validatorCompiler
     }, async (request, reply) => {
         const client = await fastify.pg.connect();
-        const { bug_id, app_version_id } = request.params;
+        const { bug_id, app_id } = request.params;
         const { attempted, expected, actual } = request.body;
         try {
-            const { rows } = await client.query("UPDATE bug SET app_version_id=$1, attempted=$2, expected=$3, actual=$4 WHERE bug_id=$5 RETURNING bug_id, app_version_id, attempted, expected, actual, created;", [app_version_id, attempted, expected, actual, bug_id]);
+            const { rows } = await client.query("UPDATE bug SET app_id=$1, attempted=$2, expected=$3, actual=$4 WHERE bug_id=$5 RETURNING bug_id, app_id, attempted, expected, actual, created;", [app_id, attempted, expected, actual, bug_id]);
 
             if (rows.length === 0) {
                 reply.status(404);
@@ -108,7 +108,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.delete("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id", {
+    fastify.delete("/api/apps/:app_id/versions/:app_id/bugs/:bug_id", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -121,7 +121,7 @@ async function routes(fastify, options) {
         const { bug_id } = request.params;
 
         try {
-            const { rows } = await client.query("DELETE FROM bug WHERE bug_id = $1 RETURNING bug_id, app_version_id, attempted, expected, actual, created;", [bug_id]);
+            const { rows } = await client.query("DELETE FROM bug WHERE bug_id = $1 RETURNING bug_id, app_id, attempted, expected, actual, created;", [bug_id]);
 
             if (rows.length === 0) {
                 reply.status(404);

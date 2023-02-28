@@ -8,7 +8,6 @@ fastify.register(require('@fastify/postgres'), {
 });
 
 fastify.register(require("./routes/app.routes"));
-fastify.register(require("./routes/app_version.routes"));
 fastify.register(require("./routes/bug.routes"));
 fastify.register(require("./routes/bug_audit.routes"));
 

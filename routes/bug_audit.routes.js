@@ -4,7 +4,7 @@ const Joi = require("joi");
 
 const { validatorCompiler } = require("../utils/validatorCompiler.util");
 const { appIdSchema } = require("../schema/app.schema");
-const { appVersionIdSchema } = require("../schema/app_version.schema");
+const { appVersionIdSchema } = require("../schema/app.schema");
 const { bugIdSchema } = require("../schema/bug.schema");
 const { bugAuditIdSchema, bugAuditSchema } = require("../schema/bug_audit.schema");
 
@@ -14,7 +14,7 @@ const { bugAuditIdSchema, bugAuditSchema } = require("../schema/bug_audit.schema
  * @param {Object} options Plugin options
  */
 async function routes(fastify, options) {
-    fastify.get("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id/audits", {
+    fastify.get("/api/apps/:app_id/versions/:app_id/bugs/:bug_id/audits", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -35,7 +35,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.post("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id/audits", {
+    fastify.post("/api/apps/:app_id/versions/:app_id/bugs/:bug_id/audits", {
         schema: {
             params: Joi.object().keys({ ...appIdSchema, ...appVersionIdSchema, ...bugIdSchema }),
             body: Joi.object().keys({ ...bugAuditSchema })
@@ -58,7 +58,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.get("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id/audits/:bug_audit_id", {
+    fastify.get("/api/apps/:app_id/versions/:app_id/bugs/:bug_id/audits/:bug_audit_id", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -84,7 +84,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.put("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id/audits/:bug_audit_id", {
+    fastify.put("/api/apps/:app_id/versions/:app_id/bugs/:bug_id/audits/:bug_audit_id", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
@@ -113,7 +113,7 @@ async function routes(fastify, options) {
         }
     });
 
-    fastify.delete("/api/apps/:app_id/versions/:app_version_id/bugs/:bug_id/audits/:bug_audit_id", {
+    fastify.delete("/api/apps/:app_id/versions/:app_id/bugs/:bug_id/audits/:bug_audit_id", {
         schema: {
             params: Joi.object().keys({
                 ...appIdSchema,
